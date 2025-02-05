@@ -449,16 +449,16 @@ textarea:focus {
     backdrop-filter: blur(4px);
 }
 
-.result-section {
+.results-section {
     padding: 1.5rem;
     border-bottom: 1px solid var(--border-color);
 }
 
-.result-section:last-child {
+.results-section:last-child {
     border-bottom: none;
 }
 
-.result-section h4 {
+.results-section h4 {
     color: var(--text-secondary);
     font-size: 0.875rem;
     text-transform: uppercase;
@@ -466,20 +466,20 @@ textarea:focus {
     margin-bottom: 1rem;
 }
 
-.result-section ul {
+.results-section ul {
     list-style: none;
     display: grid;
     gap: 0.75rem;
 }
 
-.result-section li {
+.results-section li {
     padding: 0.75rem;
     background: var(--bg-primary);
     border-radius: var(--radius);
     color: var(--text-primary);
 }
 
-.result-section p {
+.results-section p {
     color: var(--text-primary);
     line-height: 1.6;
 }
@@ -1015,4 +1015,304 @@ kbd {
 
 .close-help:hover {
     background: var(--hover-color);
+}
+
+/* Results Grid */
+.results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1.5rem;
+}
+
+/* Score Cards */
+.score-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    grid-column: 1 / -1;
+}
+
+.score-card {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.score-circle {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1rem;
+}
+
+.progress-ring {
+    width: 120px;
+    height: 120px;
+    transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+    fill: none;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+.match-score .progress-ring-circle {
+    stroke: #4F46E5;
+}
+
+.ats-score .progress-ring-circle {
+    stroke: #22C55E;
+}
+
+.score-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+/* Analysis Cards */
+.analysis-card {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.analysis-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+    font-size: 1.1rem;
+}
+
+.analysis-card h3 i {
+    color: var(--primary-color);
+}
+
+/* Matches Grid */
+.matches-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.match-item {
+    background: var(--hover-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.match-item .skill {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.match-item .context {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.match-item .relevance {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+}
+
+.relevance-high {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22C55E;
+}
+
+.relevance-medium {
+    background: rgba(234, 179, 8, 0.1);
+    color: #EAB308;
+}
+
+.relevance-low {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+/* Missing Requirements */
+.missing-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.missing-item {
+    background: var(--hover-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.missing-item .requirement {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.missing-item .importance {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 0.5rem 0;
+}
+
+.importance-critical {
+    background: rgba(239, 68, 68, 0.1);
+    color: #EF4444;
+}
+
+.importance-recommended {
+    background: rgba(234, 179, 8, 0.1);
+    color: #EAB308;
+}
+
+/* Timeline */
+.plan-timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.plan-timeline::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border-color);
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -2rem;
+    top: 0.25rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--primary-color);
+    border: 2px solid var(--bg-color);
+}
+
+.timeline-item .priority {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.timeline-item .impact {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.timeline-item .timeframe {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    background: var(--hover-color);
+    color: var(--text-color);
+}
+
+/* Insights and Suggestions */
+.insights-list, .suggestions-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.insight-item, .suggestion-item {
+    background: var(--hover-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.insight-item .trend,
+.suggestion-item .section {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.insight-item .relevance,
+.suggestion-item .issue {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.insight-item .action-item,
+.suggestion-item .recommendation {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
+    font-size: 0.875rem;
+    color: var(--primary-color);
+}
+
+/* Keyword Optimization */
+.keywords-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.keyword-item {
+    background: var(--hover-color);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.keyword-item .current {
+    color: var(--text-muted);
+    text-decoration: line-through;
+}
+
+.keyword-item .suggested {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.keyword-item .reason {
+    grid-column: 1 / -1;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Overall Assessment */
+.overall-assessment {
+    grid-column: 1 / -1;
+}
+
+.assessment-text {
+    line-height: 1.6;
+    color: var(--text-color);
 }

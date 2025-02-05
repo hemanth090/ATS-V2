@@ -131,7 +131,7 @@ def extract_text_from_pdf(file) -> Optional[str]:
 
 def get_percentage_match_prompt(job_description: str, resume_text: str) -> str:
     """Generate prompt for percentage match analysis"""
-    return f"""Analyze how well the resume matches the job description. Provide your analysis in the following exact format:
+    return f"""You are an expert ATS (Applicant Tracking System) analyzer. Analyze the resume against the job description and provide detailed feedback.
 
 Job Description:
 {job_description}
@@ -139,18 +139,56 @@ Job Description:
 Resume Text:
 {resume_text}
 
-Follow this EXACT format for your response:
+Provide a detailed analysis in the following JSON format:
+{{
+    "match_percentage": <0-100 score based on overall match>,
+    "ats_friendly_score": <0-100 score based on resume format and readability>,
+    "key_matches": [
+        {{
+            "skill": "<matched skill>",
+            "context": "<how it appears in resume>",
+            "relevance": "<high/medium/low>"
+        }}
+    ],
+    "missing_critical_requirements": [
+        {{
+            "requirement": "<missing requirement>",
+            "importance": "<critical/recommended>",
+            "suggestion": "<how to address this>"
+        }}
+    ],
+    "format_suggestions": [
+        {{
+            "section": "<section name>",
+            "issue": "<what needs improvement>",
+            "recommendation": "<how to improve it>"
+        }}
+    ],
+    "keyword_optimization": [
+        {{
+            "current": "<current phrase>",
+            "suggested": "<better keyword>",
+            "reason": "<why this would be better>"
+        }}
+    ],
+    "industry_insights": [
+        {{
+            "trend": "<industry trend>",
+            "relevance": "<why it matters>",
+            "action_item": "<what to do about it>"
+        }}
+    ],
+    "overall_assessment": "<detailed paragraph about overall fit>",
+    "improvement_priorities": [
+        {{
+            "priority": "<what to improve>",
+            "impact": "<expected impact>",
+            "timeframe": "<how urgent>"
+        }}
+    ]
+}}
 
-MATCH PERCENTAGE: [number between 0-100]
-KEY MATCHES:
-- [requirement 1]
-- [requirement 2]
-MISSING REQUIREMENTS:
-- [missing 1]
-- [missing 2]
-ATS SCORE: [number between 0-100]
-OVERALL ASSESSMENT:
-[Brief assessment of the match]"""
+Focus on providing actionable insights and industry-specific recommendations. Be specific and detailed in your analysis."""
 
 def parse_structured_response(response_text: str) -> Dict[str, Any]:
     """Parse structured text response into JSON format"""

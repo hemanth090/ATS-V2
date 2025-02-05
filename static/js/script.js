@@ -265,138 +265,264 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function displayResults(data) {
-        resultsSection.innerHTML = '';
-        console.log("Received data:", data); // Debug log
+    // Display results in a modern, interactive format
+    function displayResults(results) {
+        const resultsSection = document.getElementById('results');
+        resultsSection.innerHTML = ''; // Clear previous results
 
-        if (data.error) {
-            showError(data.error);
-            return;
-        }
-
-        if (!data.results || data.results.length === 0) {
-            showError('No results available');
-            return;
-        }
-
-        data.results.forEach(result => {
-            const resultCard = document.createElement('div');
-            resultCard.className = 'result-card';
-
-            // Check for error in result
+        results.forEach(result => {
             if (result.error) {
-                resultCard.innerHTML = `
-                    <div class="error-section">
-                        <h3>Error Processing ${result.filename}</h3>
-                        <p class="error-message">${result.error}</p>
-                    </div>
-                `;
-                resultsSection.appendChild(resultCard);
+                showError(`Error analyzing ${result.filename}: ${result.error}`);
                 return;
             }
 
-            try {
-                // Header with filename and match percentage
-                const matchScore = parseInt(result.match_percentage) || 0;
-                const scoreColor = matchScore >= 75 ? '#10b981' : matchScore >= 50 ? '#f59e0b' : '#ef4444';
-                
-                const header = document.createElement('div');
-                header.className = 'result-header';
-                header.innerHTML = `
-                    <h3>${result.filename}</h3>
-                    <div class="match-score" style="background-color: ${scoreColor}20; color: ${scoreColor}">
-                        <i class="fas fa-percentage"></i>
-                        ${matchScore}% Match
-                    </div>
-                `;
-                resultCard.appendChild(header);
+            // Create results grid
+            const resultsGrid = document.createElement('div');
+            resultsGrid.className = 'results-grid';
 
-                // ATS Score
-                const atsScore = parseInt(result.ats_friendly_score) || 0;
-                const atsSection = document.createElement('div');
-                atsSection.className = 'result-section';
-                atsSection.innerHTML = `
-                    <h4>ATS Optimization Score</h4>
-                    <div class="progress-bar">
-                        <div class="progress" style="width: ${atsScore}%"></div>
-                        <span>${atsScore}/100</span>
-                    </div>
-                    <p class="score-label">${getATSScoreLabel(atsScore)}</p>
-                `;
-                resultCard.appendChild(atsSection);
+            // Score Cards
+            const scoreCards = createScoreCards(result);
+            resultsGrid.appendChild(scoreCards);
 
-                // Add other sections (matches, requirements, skills, etc.)
-                if (result.key_matches && result.key_matches.length > 0) {
-                    const matchesSection = document.createElement('div');
-                    matchesSection.className = 'result-section';
-                    matchesSection.innerHTML = `
-                        <h4>Key Matches</h4>
-                        <ul class="tag-list">
-                            ${result.key_matches.map(match => `
-                                <li class="tag success"><i class="fas fa-check"></i>${match}</li>
-                            `).join('')}
-                        </ul>
-                    `;
-                    resultCard.appendChild(matchesSection);
-                }
-
-                if (result.missing_critical_requirements && result.missing_critical_requirements.length > 0) {
-                    const missingSection = document.createElement('div');
-                    missingSection.className = 'result-section';
-                    missingSection.innerHTML = `
-                        <h4>Missing Requirements</h4>
-                        <ul class="tag-list">
-                            ${result.missing_critical_requirements.map(req => `
-                                <li class="tag warning"><i class="fas fa-exclamation-triangle"></i>${req}</li>
-                            `).join('')}
-                        </ul>
-                    `;
-                    resultCard.appendChild(missingSection);
-                }
-
-                // Overall Assessment
-                if (result.overall_assessment) {
-                    const assessmentSection = document.createElement('div');
-                    assessmentSection.className = 'result-section';
-                    assessmentSection.innerHTML = `
-                        <h4>Overall Assessment</h4>
-                        <p class="assessment-text">${result.overall_assessment}</p>
-                    `;
-                    resultCard.appendChild(assessmentSection);
-                }
-            } catch (error) {
-                console.error("Error processing result:", error, result);
-                resultCard.innerHTML = `
-                    <div class="error-section">
-                        <h3>Error Processing ${result.filename}</h3>
-                        <p class="error-message">Failed to process analysis results</p>
-                    </div>
-                `;
+            // Key Matches
+            if (result.key_matches) {
+                const matchesCard = createMatchesCard(result.key_matches);
+                resultsGrid.appendChild(matchesCard);
             }
 
-            resultsSection.appendChild(resultCard);
+            // Missing Requirements
+            if (result.missing_critical_requirements) {
+                const missingCard = createMissingCard(result.missing_critical_requirements);
+                resultsGrid.appendChild(missingCard);
+            }
+
+            // Format Suggestions
+            if (result.format_suggestions) {
+                const formatCard = createFormatCard(result.format_suggestions);
+                resultsGrid.appendChild(formatCard);
+            }
+
+            // Keyword Optimization
+            if (result.keyword_optimization) {
+                const keywordCard = createKeywordCard(result.keyword_optimization);
+                resultsGrid.appendChild(keywordCard);
+            }
+
+            // Industry Insights
+            if (result.industry_insights) {
+                const insightsCard = createInsightsCard(result.industry_insights);
+                resultsGrid.appendChild(insightsCard);
+            }
+
+            // Improvement Plan
+            if (result.improvement_priorities) {
+                const planCard = createPlanCard(result.improvement_priorities);
+                resultsGrid.appendChild(planCard);
+            }
+
+            // Overall Assessment
+            if (result.overall_assessment) {
+                const assessmentCard = createAssessmentCard(result.overall_assessment);
+                resultsGrid.appendChild(assessmentCard);
+            }
+
+            resultsSection.appendChild(resultsGrid);
         });
 
-        resultsSection.scrollIntoView({ behavior: 'smooth' });
+        // Animate score rings
+        animateScoreRings();
     }
 
-    function getATSScoreLabel(score) {
-        if (score >= 80) return 'Excellent ATS Optimization';
-        if (score >= 60) return 'Good ATS Optimization';
-        if (score >= 40) return 'Fair ATS Optimization';
-        return 'Needs ATS Optimization';
+    // Create circular progress indicators for scores
+    function createScoreCards(result) {
+        const scoreCards = document.createElement('div');
+        scoreCards.className = 'score-cards';
+
+        // Match Score
+        const matchScore = document.createElement('div');
+        matchScore.className = 'score-card match-score';
+        matchScore.innerHTML = `
+            <div class="score-circle">
+                <svg class="progress-ring" viewBox="0 0 120 120">
+                    <circle class="progress-ring-circle" cx="60" cy="60" r="54" 
+                        stroke-dasharray="339.292" stroke-dashoffset="339.292"/>
+                </svg>
+                <span class="score-value">${result.match_percentage}%</span>
+            </div>
+            <h3>Match Score</h3>
+        `;
+
+        // ATS Score
+        const atsScore = document.createElement('div');
+        atsScore.className = 'score-card ats-score';
+        atsScore.innerHTML = `
+            <div class="score-circle">
+                <svg class="progress-ring" viewBox="0 0 120 120">
+                    <circle class="progress-ring-circle" cx="60" cy="60" r="54" 
+                        stroke-dasharray="339.292" stroke-dashoffset="339.292"/>
+                </svg>
+                <span class="score-value">${result.ats_friendly_score}%</span>
+            </div>
+            <h3>ATS Score</h3>
+        `;
+
+        scoreCards.appendChild(matchScore);
+        scoreCards.appendChild(atsScore);
+        return scoreCards;
     }
 
-    function showError(message) {
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'error-message';
-        errorDiv.textContent = message;
+    // Animate score ring progress
+    function animateScoreRings() {
+        const circles = document.querySelectorAll('.progress-ring-circle');
+        const circumference = 2 * Math.PI * 54; // 2πr where r=54
+
+        circles.forEach(circle => {
+            const scoreValue = parseInt(circle.closest('.score-card').querySelector('.score-value').textContent);
+            const offset = circumference - (scoreValue / 100 * circumference);
+            
+            // Trigger animation
+            setTimeout(() => {
+                circle.style.strokeDashoffset = offset;
+            }, 100);
+        });
+    }
+
+    // Create card for key matches
+    function createMatchesCard(matches) {
+        const card = document.createElement('div');
+        card.className = 'analysis-card key-matches';
         
-        const container = document.querySelector('.main-content');
-        container.insertBefore(errorDiv, container.firstChild);
+        const matchesHtml = matches.map(match => `
+            <div class="match-item">
+                <div class="skill">${match.skill}</div>
+                <div class="context">${match.context}</div>
+                <span class="relevance relevance-${match.relevance.toLowerCase()}">${match.relevance}</span>
+            </div>
+        `).join('');
+
+        card.innerHTML = `
+            <h3><i class="fas fa-check-circle"></i> Key Matches</h3>
+            <div class="matches-grid">${matchesHtml}</div>
+        `;
+
+        return card;
+    }
+
+    // Create card for missing requirements
+    function createMissingCard(missing) {
+        const card = document.createElement('div');
+        card.className = 'analysis-card missing-reqs';
         
-        setTimeout(() => {
-            errorDiv.remove();
-        }, 5000);
+        const missingHtml = missing.map(item => `
+            <div class="missing-item">
+                <div class="requirement">${item.requirement}</div>
+                <span class="importance importance-${item.importance.toLowerCase()}">${item.importance}</span>
+                <div class="suggestion">${item.suggestion}</div>
+            </div>
+        `).join('');
+
+        card.innerHTML = `
+            <h3><i class="fas fa-exclamation-triangle"></i> Missing Requirements</h3>
+            <div class="missing-grid">${missingHtml}</div>
+        `;
+
+        return card;
+    }
+
+    // Create card for format suggestions
+    function createFormatCard(suggestions) {
+        const card = document.createElement('div');
+        card.className = 'analysis-card format-suggestions';
+        
+        const suggestionsHtml = suggestions.map(suggestion => `
+            <div class="suggestion-item">
+                <div class="section">${suggestion.section}</div>
+                <div class="issue">${suggestion.issue}</div>
+                <div class="recommendation">${suggestion.recommendation}</div>
+            </div>
+        `).join('');
+
+        card.innerHTML = `
+            <h3><i class="fas fa-file-alt"></i> Format Improvements</h3>
+            <div class="suggestions-list">${suggestionsHtml}</div>
+        `;
+
+        return card;
+    }
+
+    // Create card for keyword optimization
+    function createKeywordCard(keywords) {
+        const card = document.createElement('div');
+        card.className = 'analysis-card keyword-optimization';
+        
+        const keywordsHtml = keywords.map(keyword => `
+            <div class="keyword-item">
+                <span class="current">${keyword.current}</span>
+                <span class="suggested">${keyword.suggested}</span>
+                <div class="reason">${keyword.reason}</div>
+            </div>
+        `).join('');
+
+        card.innerHTML = `
+            <h3><i class="fas fa-magic"></i> Keyword Optimization</h3>
+            <div class="keywords-grid">${keywordsHtml}</div>
+        `;
+
+        return card;
+    }
+
+    // Create card for industry insights
+    function createInsightsCard(insights) {
+        const card = document.createElement('div');
+        card.className = 'analysis-card industry-insights';
+        
+        const insightsHtml = insights.map(insight => `
+            <div class="insight-item">
+                <div class="trend">${insight.trend}</div>
+                <div class="relevance">${insight.relevance}</div>
+                <div class="action-item">${insight.action_item}</div>
+            </div>
+        `).join('');
+
+        card.innerHTML = `
+            <h3><i class="fas fa-lightbulb"></i> Industry Insights</h3>
+            <div class="insights-list">${insightsHtml}</div>
+        `;
+
+        return card;
+    }
+
+    // Create card for improvement plan
+    function createPlanCard(priorities) {
+        const card = document.createElement('div');
+        card.className = 'analysis-card improvement-plan';
+        
+        const planHtml = priorities.map(priority => `
+            <div class="timeline-item">
+                <div class="priority">${priority.priority}</div>
+                <div class="impact">${priority.impact}</div>
+                <span class="timeframe">${priority.timeframe}</span>
+            </div>
+        `).join('');
+
+        card.innerHTML = `
+            <h3><i class="fas fa-tasks"></i> Action Plan</h3>
+            <div class="plan-timeline">${planHtml}</div>
+        `;
+
+        return card;
+    }
+
+    // Create card for overall assessment
+    function createAssessmentCard(assessment) {
+        const card = document.createElement('div');
+        card.className = 'analysis-card overall-assessment';
+        
+        card.innerHTML = `
+            <h3><i class="fas fa-chart-line"></i> Overall Assessment</h3>
+            <p class="assessment-text">${assessment}</p>
+        `;
+
+        return card;
     }
 });

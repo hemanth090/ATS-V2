@@ -150,8 +150,72 @@
             </section>
 
             <!-- Results Section -->
-            <section class="results-section" id="results">
-                <!-- Results will be dynamically added here -->
+            <section id="results" class="results-section">
+                <div class="results-grid">
+                    <!-- Score Cards -->
+                    <div class="score-cards">
+                        <div class="score-card match-score">
+                            <div class="score-circle">
+                                <svg class="progress-ring">
+                                    <circle class="progress-ring-circle" />
+                                </svg>
+                                <span class="score-value">0%</span>
+                            </div>
+                            <h3>Match Score</h3>
+                        </div>
+                        <div class="score-card ats-score">
+                            <div class="score-circle">
+                                <svg class="progress-ring">
+                                    <circle class="progress-ring-circle" />
+                                </svg>
+                                <span class="score-value">0%</span>
+                            </div>
+                            <h3>ATS Score</h3>
+                        </div>
+                    </div>
+
+                    <!-- Key Matches -->
+                    <div class="analysis-card key-matches">
+                        <h3><i class="fas fa-check-circle"></i> Key Matches</h3>
+                        <div class="matches-grid"></div>
+                    </div>
+
+                    <!-- Missing Requirements -->
+                    <div class="analysis-card missing-reqs">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Missing Requirements</h3>
+                        <div class="missing-grid"></div>
+                    </div>
+
+                    <!-- Format Suggestions -->
+                    <div class="analysis-card format-suggestions">
+                        <h3><i class="fas fa-file-alt"></i> Format Improvements</h3>
+                        <div class="suggestions-list"></div>
+                    </div>
+
+                    <!-- Keyword Optimization -->
+                    <div class="analysis-card keyword-optimization">
+                        <h3><i class="fas fa-magic"></i> Keyword Optimization</h3>
+                        <div class="keywords-grid"></div>
+                    </div>
+
+                    <!-- Industry Insights -->
+                    <div class="analysis-card industry-insights">
+                        <h3><i class="fas fa-lightbulb"></i> Industry Insights</h3>
+                        <div class="insights-list"></div>
+                    </div>
+
+                    <!-- Improvement Plan -->
+                    <div class="analysis-card improvement-plan">
+                        <h3><i class="fas fa-tasks"></i> Action Plan</h3>
+                        <div class="plan-timeline"></div>
+                    </div>
+
+                    <!-- Overall Assessment -->
+                    <div class="analysis-card overall-assessment">
+                        <h3><i class="fas fa-chart-line"></i> Overall Assessment</h3>
+                        <p class="assessment-text"></p>
+                    </div>
+                </div>
             </section>
         </main>
 
