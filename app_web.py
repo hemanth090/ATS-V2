@@ -32,12 +32,14 @@ def extract_text_with_pdfplumber(file_path: str) -> str:
     """Extract text using pdfplumber"""
     try:
         with pdfplumber.open(file_path) as pdf:
-            text = ""
+            text = []
             for page in pdf.pages:
-                text += page.extract_text() or ""
-            return text.strip()
+                page_text = page.extract_text()
+                if page_text:
+                    text.append(page_text)
+            return "\n\n".join(text).strip()
     except Exception as e:
-        logger.error(f"pdfplumber extraction failed: {str(e)}")
+        logger.error(f"pdfplumber extraction failed: {str(e)}", exc_info=True)
         return ""
 
 def extract_text_with_pypdf(file_path: str) -> str:
@@ -45,23 +47,41 @@ def extract_text_with_pypdf(file_path: str) -> str:
     try:
         with open(file_path, 'rb') as file:
             reader = PdfReader(file)
-            text = ""
+            text = []
             for page in reader.pages:
-                text += page.extract_text() or ""
-            return text.strip()
+                page_text = page.extract_text()
+                if page_text:
+                    text.append(page_text)
+            return "\n\n".join(text).strip()
     except Exception as e:
-        logger.error(f"PyPDF2 extraction failed: {str(e)}")
+        logger.error(f"PyPDF2 extraction failed: {str(e)}", exc_info=True)
         return ""
 
 def save_uploaded_file(file) -> Optional[str]:
     """Save uploaded file to temporary location"""
     try:
+        if not file or not file.filename:
+            return None
+            
         filename = secure_filename(file.filename)
-        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], f"temp_{filename}")
+        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # Save the file
         file.save(temp_path)
+        
+        # Verify file exists and is readable
+        if not os.path.exists(temp_path):
+            logger.error(f"File not saved: {temp_path}")
+            return None
+            
+        if not os.access(temp_path, os.R_OK):
+            logger.error(f"File not readable: {temp_path}")
+            return None
+            
         return temp_path
+        
     except Exception as e:
-        logger.error(f"Failed to save uploaded file: {str(e)}")
+        logger.error(f"Error saving uploaded file: {str(e)}", exc_info=True)
         return None
 
 def extract_text_from_pdf(file) -> Optional[str]:
@@ -82,14 +102,16 @@ def extract_text_from_pdf(file) -> Optional[str]:
             
             # Method 1: pdfplumber
             text = extract_text_with_pdfplumber(temp_path)
-            if text.strip():
+            if text:
                 logger.info("Successfully extracted text using pdfplumber")
+                logger.debug(f"Extracted text (first 200 chars): {text[:200]}")
                 return text
 
             # Method 2: PyPDF2
             text = extract_text_with_pypdf(temp_path)
-            if text.strip():
+            if text:
                 logger.info("Successfully extracted text using PyPDF2")
+                logger.debug(f"Extracted text (first 200 chars): {text[:200]}")
                 return text
 
             logger.error("All PDF text extraction methods failed")
@@ -98,12 +120,13 @@ def extract_text_from_pdf(file) -> Optional[str]:
         finally:
             # Clean up temporary file
             try:
-                os.remove(temp_path)
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
             except Exception as e:
-                logger.error(f"Failed to remove temporary file: {str(e)}")
+                logger.error(f"Failed to remove temporary file: {str(e)}", exc_info=True)
 
     except Exception as e:
-        logger.error(f"PDF text extraction failed: {str(e)}")
+        logger.error(f"PDF text extraction failed: {str(e)}", exc_info=True)
         return None
 
 def get_percentage_match_prompt(job_description: str, resume_text: str) -> str:
@@ -237,7 +260,15 @@ def analyze_resume(resume_text, job_description):
         
         # Prepare the prompt
         system_prompt = """You are an expert ATS (Applicant Tracking System) analyzer. 
-        Analyze the resume against the job description and provide detailed feedback."""
+        Analyze the resume against the job description and provide a structured JSON response with the following fields:
+        {
+            "match_percentage": number (0-100),
+            "ats_friendly_score": number (0-100),
+            "key_matches": [list of matching skills/qualifications],
+            "missing_critical_requirements": [list of missing important requirements],
+            "overall_assessment": "detailed assessment text"
+        }
+        IMPORTANT: Your response must be valid JSON. Do not include any text before or after the JSON."""
         
         user_prompt = f"""Resume Content:
         {resume_text}
@@ -245,12 +276,8 @@ def analyze_resume(resume_text, job_description):
         Job Description:
         {job_description}
         
-        Provide a detailed analysis including:
-        1. Match percentage
-        2. Key matching skills
-        3. Missing skills
-        4. Improvement suggestions
-        5. Overall assessment"""
+        Analyze the resume against the job description and provide the analysis in the specified JSON format.
+        Remember: Your response must be ONLY the JSON object, nothing else."""
         
         # Make API call with DeepSeek model
         response = client.chat.completions.create(
@@ -264,10 +291,74 @@ def analyze_resume(resume_text, job_description):
             max_tokens=2000
         )
         
-        return response.choices[0].message.content
+        # Parse the response into structured data
+        response_text = response.choices[0].message.content.strip()
+        
+        # Try to clean up the response if it's not pure JSON
+        if not response_text.startswith('{'):
+            # Find the first '{' and last '}'
+            start = response_text.find('{')
+            end = response_text.rfind('}')
+            if start != -1 and end != -1:
+                response_text = response_text[start:end+1]
+        
+        try:
+            # Try to parse as JSON
+            import json
+            structured_data = json.loads(response_text)
+            
+            # Ensure all required fields exist and have correct types
+            default_data = {
+                "match_percentage": 0,
+                "ats_friendly_score": 0,
+                "key_matches": [],
+                "missing_critical_requirements": [],
+                "overall_assessment": ""
+            }
+            
+            # Convert and validate each field
+            result = {}
+            for key, default_value in default_data.items():
+                value = structured_data.get(key, default_value)
+                
+                # Handle type conversions
+                if key in ['match_percentage', 'ats_friendly_score']:
+                    try:
+                        value = int(float(value))  # Convert to float first to handle percentage strings
+                        value = max(0, min(100, value))  # Clamp between 0 and 100
+                    except (ValueError, TypeError):
+                        value = default_value
+                elif key in ['key_matches', 'missing_critical_requirements']:
+                    if not isinstance(value, list):
+                        value = []
+                elif key == 'overall_assessment':
+                    if not isinstance(value, str):
+                        value = str(value)
+                
+                result[key] = value
+            
+            return result
+            
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse AI response as JSON: {response_text}")
+            logger.error(f"JSON parsing error: {str(e)}")
+            return {
+                "match_percentage": 0,
+                "ats_friendly_score": 0,
+                "key_matches": [],
+                "missing_critical_requirements": [],
+                "overall_assessment": response_text
+            }
+        
     except Exception as e:
         logger.error(f"Error in resume analysis: {str(e)}")
-        return f"Error analyzing resume: {str(e)}"
+        return {
+            "match_percentage": 0,
+            "ats_friendly_score": 0,
+            "key_matches": [],
+            "missing_critical_requirements": [],
+            "overall_assessment": f"Error analyzing resume: {str(e)}"
+        }
 
 @app.route('/')
 def index():
@@ -309,19 +400,46 @@ def analyze():
                 if not pdf_content:
                     results.append({
                         'filename': file.filename,
-                        'error': 'Could not extract text from PDF'
+                        'error': 'Could not extract text from PDF. Please make sure the PDF is not password protected and contains extractable text.'
                     })
                     continue
 
+                # Log the extracted content for debugging
+                logger.debug(f"Extracted text from {file.filename}: {pdf_content[:200]}...")  # Log first 200 chars
+
                 # Analyze resume
                 analysis = analyze_resume(pdf_content, job_description)
-                results.append({
-                    'filename': file.filename,
-                    'analysis': analysis
-                })
+                logger.info(f"Analysis result for {file.filename}: {analysis}")
+                
+                # Handle error cases
+                if isinstance(analysis, str) and 'error' in analysis.lower():
+                    results.append({
+                        'filename': file.filename,
+                        'error': analysis
+                    })
+                    continue
+                
+                # Handle successful analysis
+                if isinstance(analysis, dict):
+                    result = {
+                        'filename': file.filename,
+                        'match_percentage': analysis.get('match_percentage', 0),
+                        'ats_friendly_score': analysis.get('ats_friendly_score', 0),
+                        'key_matches': analysis.get('key_matches', []),
+                        'missing_critical_requirements': analysis.get('missing_critical_requirements', []),
+                        'overall_assessment': analysis.get('overall_assessment', '')
+                    }
+                else:
+                    result = {
+                        'filename': file.filename,
+                        'error': f'Invalid analysis format: {str(analysis)}'
+                    }
+                
+                results.append(result)
+                logger.info(f"Final result for {file.filename}: {result}")
 
             except Exception as e:
-                logger.error(f"Error processing file {file.filename}: {str(e)}")
+                logger.error(f"Error processing file {file.filename}: {str(e)}", exc_info=True)  # Added exc_info for full traceback
                 results.append({
                     'filename': file.filename,
                     'error': f'Error processing PDF: {str(e)}'
@@ -330,10 +448,12 @@ def analyze():
         if not results:
             return jsonify({'error': 'No valid PDF files processed'}), 400
 
-        return jsonify({'results': results})
+        response_data = {'results': results}
+        logger.info(f"Final response: {response_data}")
+        return jsonify(response_data)
 
     except Exception as e:
-        logger.error(f"Error in analyze route: {str(e)}")
+        logger.error(f"Error in analyze route: {str(e)}", exc_info=True)  # Added exc_info for full traceback
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

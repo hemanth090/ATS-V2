@@ -172,6 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function displayResults(data) {
         resultsSection.innerHTML = '';
+        console.log("Received data:", data); // Debug log
 
         if (data.error) {
             showError(data.error);
@@ -187,6 +188,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const resultCard = document.createElement('div');
             resultCard.className = 'result-card';
 
+            // Check for error in result
             if (result.error) {
                 resultCard.innerHTML = `
                     <div class="error-section">
@@ -198,73 +200,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Header with filename and match percentage
-            const matchScore = parseInt(result.match_percentage) || 0;
-            const scoreColor = matchScore >= 75 ? '#10b981' : matchScore >= 50 ? '#f59e0b' : '#ef4444';
-            
-            const header = document.createElement('div');
-            header.className = 'result-header';
-            header.innerHTML = `
-                <h3>${result.filename}</h3>
-                <div class="match-score" style="background-color: ${scoreColor}20; color: ${scoreColor}">
-                    <i class="fas fa-percentage"></i>
-                    ${matchScore}% Match
-                </div>
-            `;
-            resultCard.appendChild(header);
-
-            // ATS Score
-            const atsScore = parseInt(result.ats_friendly_score) || 0;
-            const atsSection = document.createElement('div');
-            atsSection.className = 'result-section';
-            atsSection.innerHTML = `
-                <h4>ATS Optimization Score</h4>
-                <div class="progress-bar">
-                    <div class="progress" style="width: ${atsScore}%"></div>
-                    <span>${atsScore}/100</span>
-                </div>
-                <p class="score-label">${getATSScoreLabel(atsScore)}</p>
-            `;
-            resultCard.appendChild(atsSection);
-
-            // Add other sections (matches, requirements, skills, etc.)
-            if (result.key_matches && result.key_matches.length > 0) {
-                const matchesSection = document.createElement('div');
-                matchesSection.className = 'result-section';
-                matchesSection.innerHTML = `
-                    <h4>Key Matches</h4>
-                    <ul class="tag-list">
-                        ${result.key_matches.map(match => `
-                            <li class="tag success"><i class="fas fa-check"></i>${match}</li>
-                        `).join('')}
-                    </ul>
+            try {
+                // Header with filename and match percentage
+                const matchScore = parseInt(result.match_percentage) || 0;
+                const scoreColor = matchScore >= 75 ? '#10b981' : matchScore >= 50 ? '#f59e0b' : '#ef4444';
+                
+                const header = document.createElement('div');
+                header.className = 'result-header';
+                header.innerHTML = `
+                    <h3>${result.filename}</h3>
+                    <div class="match-score" style="background-color: ${scoreColor}20; color: ${scoreColor}">
+                        <i class="fas fa-percentage"></i>
+                        ${matchScore}% Match
+                    </div>
                 `;
-                resultCard.appendChild(matchesSection);
-            }
+                resultCard.appendChild(header);
 
-            if (result.missing_critical_requirements && result.missing_critical_requirements.length > 0) {
-                const missingSection = document.createElement('div');
-                missingSection.className = 'result-section';
-                missingSection.innerHTML = `
-                    <h4>Missing Requirements</h4>
-                    <ul class="tag-list">
-                        ${result.missing_critical_requirements.map(req => `
-                            <li class="tag warning"><i class="fas fa-exclamation-triangle"></i>${req}</li>
-                        `).join('')}
-                    </ul>
+                // ATS Score
+                const atsScore = parseInt(result.ats_friendly_score) || 0;
+                const atsSection = document.createElement('div');
+                atsSection.className = 'result-section';
+                atsSection.innerHTML = `
+                    <h4>ATS Optimization Score</h4>
+                    <div class="progress-bar">
+                        <div class="progress" style="width: ${atsScore}%"></div>
+                        <span>${atsScore}/100</span>
+                    </div>
+                    <p class="score-label">${getATSScoreLabel(atsScore)}</p>
                 `;
-                resultCard.appendChild(missingSection);
-            }
+                resultCard.appendChild(atsSection);
 
-            // Overall Assessment
-            if (result.overall_assessment) {
-                const assessmentSection = document.createElement('div');
-                assessmentSection.className = 'result-section';
-                assessmentSection.innerHTML = `
-                    <h4>Overall Assessment</h4>
-                    <p class="assessment-text">${result.overall_assessment}</p>
+                // Add other sections (matches, requirements, skills, etc.)
+                if (result.key_matches && result.key_matches.length > 0) {
+                    const matchesSection = document.createElement('div');
+                    matchesSection.className = 'result-section';
+                    matchesSection.innerHTML = `
+                        <h4>Key Matches</h4>
+                        <ul class="tag-list">
+                            ${result.key_matches.map(match => `
+                                <li class="tag success"><i class="fas fa-check"></i>${match}</li>
+                            `).join('')}
+                        </ul>
+                    `;
+                    resultCard.appendChild(matchesSection);
+                }
+
+                if (result.missing_critical_requirements && result.missing_critical_requirements.length > 0) {
+                    const missingSection = document.createElement('div');
+                    missingSection.className = 'result-section';
+                    missingSection.innerHTML = `
+                        <h4>Missing Requirements</h4>
+                        <ul class="tag-list">
+                            ${result.missing_critical_requirements.map(req => `
+                                <li class="tag warning"><i class="fas fa-exclamation-triangle"></i>${req}</li>
+                            `).join('')}
+                        </ul>
+                    `;
+                    resultCard.appendChild(missingSection);
+                }
+
+                // Overall Assessment
+                if (result.overall_assessment) {
+                    const assessmentSection = document.createElement('div');
+                    assessmentSection.className = 'result-section';
+                    assessmentSection.innerHTML = `
+                        <h4>Overall Assessment</h4>
+                        <p class="assessment-text">${result.overall_assessment}</p>
+                    `;
+                    resultCard.appendChild(assessmentSection);
+                }
+            } catch (error) {
+                console.error("Error processing result:", error, result);
+                resultCard.innerHTML = `
+                    <div class="error-section">
+                        <h3>Error Processing ${result.filename}</h3>
+                        <p class="error-message">Failed to process analysis results</p>
+                    </div>
                 `;
-                resultCard.appendChild(assessmentSection);
             }
 
             resultsSection.appendChild(resultCard);
