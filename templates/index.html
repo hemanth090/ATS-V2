@@ -21,6 +21,43 @@
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
         <i class="fas fa-moon"></i>
     </button>
+    <button class="help-button" id="helpButton" aria-label="Show keyboard shortcuts">
+        <i class="fas fa-keyboard"></i>
+    </button>
+    <div class="help-modal" id="helpModal">
+        <div class="help-content">
+            <h2>Keyboard Shortcuts</h2>
+            <div class="shortcuts-grid">
+                <div class="shortcut">
+                    <kbd>Ctrl</kbd> + <kbd>U</kbd>
+                    <span>Upload Resume</span>
+                </div>
+                <div class="shortcut">
+                    <kbd>Ctrl</kbd> + <kbd>Enter</kbd>
+                    <span>Analyze Resume</span>
+                </div>
+                <div class="shortcut">
+                    <kbd>Ctrl</kbd> + <kbd>D</kbd>
+                    <span>Clear Form</span>
+                </div>
+                <div class="shortcut">
+                    <kbd>T</kbd>
+                    <span>Toggle Theme</span>
+                </div>
+                <div class="shortcut">
+                    <kbd>?</kbd>
+                    <span>Show/Hide Help</span>
+                </div>
+                <div class="shortcut">
+                    <kbd>Esc</kbd>
+                    <span>Close Help</span>
+                </div>
+            </div>
+            <button class="close-help" id="closeHelp">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
     <div class="app-container">
         <!-- Header Section -->
         <header class="app-header">
@@ -122,10 +159,13 @@
         <div class="loading-overlay">
             <div class="loading-content">
                 <div class="loading-animation">
-                    <div class="spinner"></div>
-                    <div class="spinner-ring"></div>
+                    <div class="document"></div>
+                    <div class="scanner"></div>
                 </div>
-                <p>Analyzing resumes...</p>
+                <div class="progress-bar">
+                    <div class="progress-fill"></div>
+                </div>
+                <div class="status-message">Analyzing Resume...</div>
             </div>
         </div>
     </div>

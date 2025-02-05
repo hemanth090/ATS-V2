@@ -8,6 +8,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadingOverlay = document.querySelector('.loading-overlay');
     const resultsSection = document.getElementById('results');
 
+    // Help Modal
+    const helpButton = document.getElementById('helpButton');
+    const helpModal = document.getElementById('helpModal');
+    const closeHelp = document.getElementById('closeHelp');
+
+    function toggleHelpModal() {
+        helpModal.classList.toggle('active');
+    }
+
+    helpButton.addEventListener('click', toggleHelpModal);
+    closeHelp.addEventListener('click', toggleHelpModal);
+
     // File handling
     let files = new Set();
 
@@ -127,6 +139,89 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 5000);
     }
 
+    // Keyboard Shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Don't trigger shortcuts if user is typing in an input
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        // Show/Hide Help Modal
+        if (e.key === '?') {
+            toggleHelpModal();
+        }
+
+        // Close Help Modal
+        if (e.key === 'Escape' && helpModal.classList.contains('active')) {
+            toggleHelpModal();
+        }
+
+        // Toggle Theme
+        if (e.key === 't' || e.key === 'T') {
+            document.getElementById('themeToggle').click();
+        }
+
+        // Upload Resume (Ctrl + U)
+        if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) {
+            e.preventDefault();
+            document.querySelector('input[type="file"]').click();
+        }
+
+        // Analyze Resume (Ctrl + Enter)
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            document.querySelector('button[type="submit"]').click();
+        }
+
+        // Clear Form (Ctrl + D)
+        if (e.ctrlKey && (e.key === 'd' || e.key === 'D')) {
+            e.preventDefault();
+            document.querySelector('textarea').value = '';
+            document.querySelector('input[type="file"]').value = '';
+            const resultsContainer = document.getElementById('resultsContainer');
+            if (resultsContainer) {
+                resultsContainer.innerHTML = '';
+            }
+        }
+    });
+
+    // Update loading status messages
+    const statusMessages = [
+        'Analyzing Resume...',
+        'Extracting Key Skills...',
+        'Matching with Job Description...',
+        'Calculating Match Score...',
+        'Generating Recommendations...'
+    ];
+
+    let messageIndex = 0;
+    function updateLoadingMessage() {
+        const statusElement = document.querySelector('.status-message');
+        if (statusElement) {
+            statusElement.textContent = statusMessages[messageIndex];
+            messageIndex = (messageIndex + 1) % statusMessages.length;
+        }
+    }
+
+    // Update loading message every 2 seconds during analysis
+    function startLoadingMessages() {
+        messageIndex = 0;
+        updateLoadingMessage();
+        return setInterval(updateLoadingMessage, 2000);
+    }
+
+    function showLoadingOverlay() {
+        const overlay = document.querySelector('.loading-overlay');
+        overlay.style.display = 'flex';
+        return startLoadingMessages();
+    }
+
+    function hideLoadingOverlay(intervalId) {
+        const overlay = document.querySelector('.loading-overlay');
+        overlay.style.display = 'none';
+        clearInterval(intervalId);
+    }
+
     // Form submission
     analyzeBtn.addEventListener('click', async () => {
         if (files.size === 0) {
@@ -139,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        loadingOverlay.style.display = 'flex';
+        const intervalId = showLoadingOverlay();
         
         try {
             const formData = new FormData();
@@ -166,7 +261,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error:', error);
             showError('An error occurred while processing your request');
         } finally {
-            loadingOverlay.style.display = 'none';
+            hideLoadingOverlay(intervalId);
         }
     });
 
