@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ATS Resume Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+        <i class="fas fa-moon"></i>
+    </button>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <h1>ATS Resume Analyzer</h1>
+                </div>
+                <p class="subtitle">Powered by AI to optimize your career opportunities</p>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Input Section -->
+            <section class="input-section">
+                <div class="flash-card">
+                    <div class="flash-card-header">
+                        <i class="fas fa-file-upload"></i>
+                        <h2>Upload & Analyze</h2>
+                    </div>
+                    <div class="flash-card-body">
+                        <!-- Job Description Input -->
+                        <div class="input-group">
+                            <label for="jobDescription">
+                                <i class="fas fa-briefcase"></i>
+                                Job Description
+                            </label>
+                            <div class="textarea-wrapper">
+                                <textarea id="jobDescription" placeholder="Paste the job description here..."></textarea>
+                                <div class="char-count">0/50 characters minimum</div>
+                            </div>
+                        </div>
+
+                        <!-- File Upload -->
+                        <div class="input-group">
+                            <label for="fileInput">
+                                <i class="fas fa-file-pdf"></i>
+                                Resume Files (PDF)
+                            </label>
+                            <div class="file-upload-container">
+                                <div class="file-upload-box" id="dropZone">
+                                    <div class="upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="upload-text">
+                                        <p class="primary-text">Drag & drop PDF files here</p>
+                                        <p class="secondary-text">or click to browse</p>
+                                    </div>
+                                    <input type="file" id="fileInput" multiple accept=".pdf" style="display: none;">
+                                </div>
+                                <div class="file-list" id="fileList"></div>
+                            </div>
+                        </div>
+
+                        <!-- Analysis Type -->
+                        <div class="input-group">
+                            <label>
+                                <i class="fas fa-chart-bar"></i>
+                                Analysis Type
+                            </label>
+                            <div class="analysis-options">
+                                <label class="analysis-option">
+                                    <input type="radio" name="analysisType" value="match" checked>
+                                    <div class="option-card">
+                                        <i class="fas fa-percentage"></i>
+                                        <span>Quick Match</span>
+                                        <p>Get a quick percentage match and key points</p>
+                                    </div>
+                                </label>
+                                <label class="analysis-option">
+                                    <input type="radio" name="analysisType" value="detailed">
+                                    <div class="option-card">
+                                        <i class="fas fa-list-check"></i>
+                                        <span>Detailed Review</span>
+                                        <p>Get comprehensive analysis and feedback</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button id="analyzeBtn" class="btn-primary" disabled>
+                            <i class="fas fa-search"></i>
+                            Analyze Resumes
+                            <span class="btn-shine"></span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="results">
+                <!-- Results will be dynamically added here -->
+            </section>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay">
+            <div class="loading-content">
+                <div class="loading-animation">
+                    <div class="spinner"></div>
+                    <div class="spinner-ring"></div>
+                </div>
+                <p>Analyzing resumes...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script>
+        // Theme switching
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference, otherwise use system preference
+        const getPreferredTheme = () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                return savedTheme;
+            }
+            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        };
+
+        // Apply theme to document
+        const setTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            
+            // Update button icon
+            if (theme === 'dark') {
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            } else {
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            }
+        };
+
+        // Initialize theme
+        setTheme(getPreferredTheme());
+
+        // Toggle theme on button click
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            setTheme(currentTheme === 'dark' ? 'light' : 'dark');
+        });
+
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: ats-tracking-system
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app_web.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.9.0
+      - key: GROQ_API_KEY
+        sync: false
