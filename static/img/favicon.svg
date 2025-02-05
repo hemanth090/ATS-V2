@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background Circle -->
+    <circle cx="16" cy="16" r="16" fill="#4F46E5"/>
+    
+    <!-- Document Icon -->
+    <path d="M10 8C10 7.44772 10.4477 7 11 7H21C21.5523 7 22 7.44772 22 8V24C22 24.5523 21.5523 25 21 25H11C10.4477 25 10 24.5523 10 24V8Z" fill="white"/>
+    
+    <!-- Scanner Line (ATS Scanning) -->
+    <rect x="12" y="11" width="8" height="1.5" rx="0.75" fill="#4F46E5"/>
+    <rect x="12" y="15" width="8" height="1.5" rx="0.75" fill="#4F46E5"/>
+    <rect x="12" y="19" width="5" height="1.5" rx="0.75" fill="#4F46E5"/>
+    
+    <!-- Checkmark -->
+    <path d="M23 13L25 15L28 11" stroke="#22C55E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
