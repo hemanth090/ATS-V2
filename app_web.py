@@ -294,7 +294,7 @@ def process_resume_analysis(job_description: str, resume_text: str, prompt_type:
 
 def analyze_resume(resume_text, job_description):
     try:
-        client = Groq(api_key="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")
+        client = Groq(api_key="")
         
         # Prepare the prompt
         system_prompt = """You are an expert ATS (Applicant Tracking System) analyzer. 
